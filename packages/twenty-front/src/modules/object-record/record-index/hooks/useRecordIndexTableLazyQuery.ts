@@ -18,6 +18,8 @@ export const useRecordIndexTableLazyQuery = (objectNameSingular: string) => {
     useLazyFindManyRecords({
       ...params,
       recordGqlFields,
+      // The table only receives SSE events while mounted, so a cached list can miss records.
+      fetchPolicy: 'network-only',
     });
 
   return {
