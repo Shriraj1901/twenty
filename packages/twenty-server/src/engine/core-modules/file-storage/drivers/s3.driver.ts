@@ -411,14 +411,24 @@ export class S3Driver implements StorageDriver {
           error.name === 'NotImplemented' ||
           error.$metadata?.httpStatusCode === 501;
 
-        if (!isNotImplemented) {
+        // Tigris refuses conditional copies of multipart-written objects with 409.
+        // It supports them for other objects, so only this copy loses the condition.
+        const isConditionalRequestConflict =
+          error.name === 'ConditionalRequestConflict' ||
+          error.$metadata?.httpStatusCode === 409;
+
+        if (isNotImplemented) {
+          this.supportsConditionalCopy = false;
+          this.logger.warn(
+            'S3 backend does not support CopySourceIfMatch, falling back to unconditional copies',
+          );
+        } else if (isConditionalRequestConflict) {
+          this.logger.warn(
+            `S3 backend refused CopySourceIfMatch for ${fromKey}, falling back to an unconditional copy`,
+          );
+        } else {
           throw error;
         }
-
-        this.supportsConditionalCopy = false;
-        this.logger.warn(
-          'S3 backend does not support CopySourceIfMatch, falling back to unconditional copies',
-        );
       }
     }
 
