@@ -14,6 +14,8 @@ const StyledVideoViewport = styled.div`
   aspect-ratio: 16 / 9;
   background: ${themeCssVariables.background.primary};
   border-radius: ${themeCssVariables.border.radius.sm};
+  // Keeps a wide widget from letting the 16:9 video push the transcript out of view.
+  max-height: 50vh;
   overflow: hidden;
   position: relative;
   width: 100%;
